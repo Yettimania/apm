@@ -1,0 +1,221 @@
+#!/bin/bash
+# APM File Manager
+# This is a suckless script to manage AGILE projects
+# 
+# Dependencies: fzf
+
+usage () {
+   echo Usage: apm [ -p PARENT ] 
+   echo -e '\t Create parent file'
+   echo Usage: apm [ -c CHILD ] [ PARENT ]
+   echo -e '\t Create child for specific parent'
+   echo Usage: apm [ -t TASK ] [ CHILD ]
+   echo -e '\t Create task for specific child'
+   echo Usage: apm [ -s SEARCH ] [ KEYWORD ] 
+   echo -e '\tSearch all files in directory using fzf on specified keyword'
+   echo Usage: apm [ -b BROWSE ]
+   echo -e '\tBrowse all files in directory with fzf preview'
+   echo Usage: apm [ -u UPDATE ] [ARGS]
+   echo -e '\tUpdate the Status, Iteration, or Assignee for a list of
+        files entered as 1.1,1.2,1.3'
+   echo Usage: apm [ -r REPORT ]
+   echo -e '\tGenerate a iteration report and display parent, child and task 
+        files that are incomplete. Creates a CFM file for each iteration
+        that can be used to generate CFM charts in prefered application.'
+}
+
+update () {
+    set -f; IFS=","
+
+    filearr=($OPTARG)
+ 
+    echo 'Select variable to update:'
+    select choice in Status Assignee Iteration
+    do
+        var=$choice 
+        break
+    done
+
+    read -p "Updating $choice in the following files ${filearr[*]}? (y/n) " verify
+
+    if [ $verify = y ] 
+    then
+        read -p "Update to what value: " update
+        for (( x=0; x<${#filearr[@]}; x++ ))
+        do
+            sed -i "s/$var..*/$var:$update/g" ${filearr[x]}
+        done
+        echo 'Files updated successfully!'
+    else
+        echo 'Exiting file updated...no files updated.'
+        exit 0 
+    fi
+}
+
+find_last_entry () {
+    ls | grep -x $1.. | sort -g | tail -n 1
+}
+
+status_count () {
+   grep --with-filename 'Status' ${TASKSTATUS[@]} | sed 's/ //g' | cut -d':' -f3 | uniq -c | grep -iw $1 | awk '{print $1}'
+   
+}
+
+create_parent(){
+    LASTPARENT=$( ls | grep -E '^[0-9]+' | sort -g| tail -n 1 | cut -d. -f1 ) 
+    NEXTPARENT=$((LASTPARENT+1))
+    echo -e 'Name:\nDescription:' > $NEXTPARENT
+}
+
+create_child(){
+    LASTCHILD=$( find_last_entry $OPTARG )
+    if [ -e $OPTARG ]
+    then
+        LASTCHILD=${LASTCHILD##*.}
+        NEXTCHILD=$OPTARG.$((LASTCHILD+1))
+        echo -e 'Name:\nDescription:\nType:\nIteration:\nStatus:\nAssignee:\nStory Points:\nValue Points:\nDependencies:\nRequirements:\nTest:' > $NEXTCHILD
+    else
+        echo 'Error: Parent does not exist. Create parent before creating a child.'
+        exit 0
+    fi
+}
+
+create_task(){
+    LASTCHILD=$( find_last_entry $OPTARG )
+    if [ -e $OPTARG ]
+    then
+        LASTCHILD=${LASTCHILD##*.}
+        NEXTCHILD=$OPTARG.$((LASTCHILD+1))
+        echo -e "Name:\nAssignee:\nStatus:" > $NEXTCHILD
+    else
+        echo 'Error: Child does not exist. Create child before creating a task.'
+        exit 0
+    fi
+}
+
+search(){
+    SEL=$( grep -rli $OPTARG | fzf --preview="cat {}" --preview-window=right:80%:wrap)
+    if [ -z "$SEL" ]
+    then
+        exit 0
+    else
+        $EDITOR $SEL
+    fi
+}
+
+browse(){
+    SEL=$( fzf --preview="cat {}" --preview-window=right:80%:wrap )
+    if [ -z "$SEL" ]
+    then
+        exit 0
+    else
+        $EDITOR $SEL
+    fi
+}
+
+report(){
+
+    IFS=$'\n' #need to return grep returns into arrays
+
+    UNIQUE_ITER=( $(grep -r Iteration | cut -d':' -f3 | \
+                    sed 's/ //g' | sort --unique) )
+
+    if [ -z $UNIQUE_ITER ]
+    then
+        echo 'Warning: No iterations have been assigned.'
+        exit 0
+    fi
+
+    for(( i=0; i<${#UNIQUE_ITER[@]}; i++ ))  
+    do
+        unset TASKSTATUS STORY_ARR
+        echo "-------------------" 
+        echo "ITERATION ${UNIQUE_ITER[i]} SUMMARY"
+        echo "-------------------"
+        STORIES_PER=$( grep -r "Iteration:.*${UNIQUE_ITER[i]}" | wc -l )
+        echo Stories in Iteration: $STORIES_PER
+        IFS=$'\n'
+        STORY_ARR=( $(grep -lr "Iteration:.*${UNIQUE_ITER[i]}") )
+        unset IFS
+
+        O_STORY=$(grep -r "Status:.*Open" ${STORY_ARR[@]} | wc -l)
+        C_STORY=$(grep -r "Status:.*Closed" ${STORY_ARR[@]} | wc -l)
+        echo Open Stories: $O_STORY
+        echo Closed Stories: $C_STORY
+        echo ''
+
+        echo '---Tasks Assigned to Stories---'
+        for (( c=0; c<${#STORY_ARR[@]}; c++ ))
+        do
+            TASKS_ARR=( $(ls | grep -x ${STORY_ARR[c]}..) )
+            echo ${#TASKS_ARR[@]} tasks for ${STORY_ARR[c]}
+            TASKSTATUS+=(${TASKS_ARR[@]})
+        done
+        
+        echo '---Task Summary for Iteration---' 
+
+        echo ${#TASKSTATUS[@]} Total Tasks
+        if [ ${#TASKSTATUS[@]} -eq 0 ]
+        then
+            continue
+        else
+
+            grep 'Status' ${TASKSTATUS[@]} | sed 's/ //g' | \
+            cut -d':' -f3 | uniq -c
+
+            DONE=$(( $(status_count Done)+0 ))
+            TODO=$(( $(status_count Todo)+0 ))
+            DO=$(( $(status_count Do)+0 ))
+
+        fi
+        
+        if [ -e cfm${UNIQUE_ITER[i]} ]
+        then
+            IFS=$'\t'
+            PREV_LINE=( $(tail -1 cfm${UNIQUE_ITER[i]}) )
+            TODO=$(( PREV_LINE[1] + $TODO ))
+            DO=$(( PREV_LINE[2] + $DO ))
+            DONE=$(( PREV_LINE[3] + $DONE ))
+            echo -e "$(date +%Y-%m-%d)\t$TODO\t$DO\t$DONE" >> cfm${UNIQUE_ITER[i]}
+        else
+            echo -e "DATE\tTODO\tDO\tDONE" > cfm${UNIQUE_ITER[i]}
+            echo -e "$(date +%Y-%m-%d)\t$TODO\t$DO\t$DONE" >> cfm${UNIQUE_ITER[i]}
+        fi
+
+    done
+
+    echo ''
+    echo '----------------'
+    echo 'Incomplete Cards'
+    echo '----------------'
+    echo '---No assigned Iteration---'
+    grep -xrl 'Iteration:'
+    echo '---No assigned Status---'
+    grep -xrl 'Status:'
+    echo '---No Assignee---'
+    grep -xrl 'Assignee:'
+    
+    unset IFS
+}
+
+if [ $# = 0 ]
+then
+    usage 
+fi
+
+while getopts "pc:t:s:bu:r" opt; do
+    set -f; IFS=","
+    
+    case $opt in
+    
+    p) create_parent;;
+    c) create_child;;
+    t) create_task;;
+    s) search;;
+    b) browse;;
+    u) update;;
+    r) report;;
+
+    esac
+    unset IFS
+done
