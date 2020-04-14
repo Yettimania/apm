@@ -1,2 +1,2 @@
 # apm
-Minimal Viabl Program for Agile Project Management
+Minimal Viable Program for Agile Project Management
