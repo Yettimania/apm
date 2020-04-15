@@ -2,17 +2,17 @@
 
 > Agile project management from the command line.
 
-`apm` is a minimal viable program (mpv) focused on a hierarchy of parents, children and tasks. It is a simple means of managing a project from the command line in place of flash cards, sticky notes, etc. 
+`apm` is a minimal viable program (mpv) focused on a hierarchy of parents, children and tasks. It is a simple means of managing a project from the command line in lieu of flash cards, sticky notes, etc. 
 
 It is generalized to a **parent** & **child** system so hierarchy can be defined by individual users. For example, **parents** may be defined as capabilites or features. Each **parent**, can have multiple children, or stories and each **child** can have multiple tasks associated with it. 
 
-It works on a simple numeric number system.
+It works on a simple numeric numbering system.
 
-1,2,3... integers are parents
+1,2,3... - whole integers are parents
 
-1.1,1.2,1.3... are children of the specified parent (1.X)
+1.1,1.2,1.3... - are children of the specified parent (1.X,2.X)
 
-1.1.1,1.1.2,1.1.3 are tasks for a specific child (1.1.X)
+1.1.1,1.1.2,1.1.3 are tasks for a specific child (1.1.X,1.2.X)
 
 ## Install
 
@@ -46,10 +46,10 @@ $ apm [ -b BROWSE ]
 
 # Update Status, Iteration or Assigneed for a list of files entered
 $ apm [ -u UPDATE ] [ARGS]
-$ i.e. apm -u 1.1,1.2,2.1
+# i.e. apm -u 1.1,1.2,2.1
 
 # Generate a iteration report and display parent, child and task files that are incomplete. Creates a CFM file for each iteration that can be used to generate CFM charts in prefered application.'
-# apm [ -r REPORT ]
+$ apm [ -r REPORT ]
 ```
 
 The report output would appear as follows. At the end, it will report any files that have incomplete information that could be incorrectly reporting results.
