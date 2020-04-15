@@ -31,18 +31,23 @@ wget https://raw.githubusercontent.com/Yettimania/apm/master/apm
 ```sh
 # Create a parent file.
 $ apm [ -p PARENT ] 
+# i.e. apm -p
 
 # Create a child for a specified parent.
 $ apm [ -c CHILD ] [ PARENT ]
+# i.e. apm -c 1
 
 # Create a task for a specified child.
 $ apm [ -t TASK ] [ CHILD ]
+# i.e. apm -t 1.1
 
 # Search all files in a given directory for keyword
 $ apm [ -s SEARCH ] [ KEYWORD ] 
+# i.e. apm -s interface
 
 # Launch fzf to browse all files in a given directory
 $ apm [ -b BROWSE ]
+# i.e. apm -b
 
 # Update Status, Iteration or Assigneed for a list of files entered
 $ apm [ -u UPDATE ] [ARGS]
@@ -50,6 +55,7 @@ $ apm [ -u UPDATE ] [ARGS]
 
 # Generate a iteration report and display parent, child and task files that are incomplete. Creates a CFM file for each iteration that can be used to generate CFM charts in prefered application.'
 $ apm [ -r REPORT ]
+# i.e. apm -r
 ```
 
 The report output would appear as follows. At the end, it will report any files that have incomplete information that could be incorrectly reporting results.
