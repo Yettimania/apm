@@ -2,9 +2,17 @@
 
 > Agile project management from the command line.
 
-'apm' is a Minimal Viable Program focused on a hierarchy of parents, children and tasks. It is a simple means of managing a project from the command line in place of flash cards, sticky notes, etc. 
+'apm' is a minimal viable program (mpv) focused on a hierarchy of parents, children and tasks. It is a simple means of managing a project from the command line in place of flash cards, sticky notes, etc. 
 
 It is generalized to a **parent** & **child** system so hierarchy can be defined by individual users. For example, **parents** may be defined as capabilites or features. Each **parent**, can have multiple children, or stories and each **child** can have multiple tasks associated with it. 
+
+It works on a simple numeric number system.
+
+1,2,3... integers are parents
+
+1.1,1.2,1.3... are children of the specified parent (1.X)
+
+1.1.1,1.1.2,1.1.3 are tasks for a specific child (1.1.X)
 
 ## Install
 
@@ -20,7 +28,7 @@ wget https://raw.githubusercontent.com/Yettimania/apm/master/apm
 
 ## Usage
 
-'''sh
+```sh
 # Create a parent file.
 $ apm [ -p PARENT ] 
 
@@ -42,11 +50,11 @@ $ i.e. apm -u 1.1,1.2,2.1
 
 # Generate a iteration report and display parent, child and task files that are incomplete. Creates a CFM file for each iteration that can be used to generate CFM charts in prefered application.'
 # apm [ -r REPORT ]
-'''
+```
 
-The report output would appear as
+The report output would appear as follows. At the end, it will report any files that have incomplete information that could be incorrectly reporting results.
 
-'''sh
+```sh
 -------------------
 ITERATION 1 SUMMARY
 -------------------
@@ -86,9 +94,9 @@ Incomplete Cards
 1.1.2
 1.1.3
 2.1.1
-'''
+```
 
 For each iteration, a cumulative flow table counts the cumaltive 'Todo', 'Do' and 'Done' tasks for each iteration. This file can be used to review or plot the progress of the iteration.
 
-![cfm.png]()
+![cfm.png](https://github.com/Yettimania/apm/blob/master/cfm.png)
 
