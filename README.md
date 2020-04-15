@@ -2,7 +2,7 @@
 
 > Agile project management from the command line.
 
-'apm' is a minimal viable program (mpv) focused on a hierarchy of parents, children and tasks. It is a simple means of managing a project from the command line in place of flash cards, sticky notes, etc. 
+`apm` is a minimal viable program (mpv) focused on a hierarchy of parents, children and tasks. It is a simple means of managing a project from the command line in place of flash cards, sticky notes, etc. 
 
 It is generalized to a **parent** & **child** system so hierarchy can be defined by individual users. For example, **parents** may be defined as capabilites or features. Each **parent**, can have multiple children, or stories and each **child** can have multiple tasks associated with it. 
 
@@ -16,15 +16,15 @@ It works on a simple numeric number system.
 
 ## Install
 
-Utilizes fzf for search and browse capability.
+Utilizes `fzf` for search and browse capability.
 
-Copy the file into a $PATH so 'apm' can be executed within any folder.'
+Copy the file into a $PATH so `apm` can be executed within any folder.
 
-'''sh
+```sh
 wget https://raw.githubusercontent.com/Yettimania/apm/master/apm
-'''
+```
 
-'cd' into $PATH and make apm file executable with 'chmod +x apm' 
+`cd` into `$PATH` and make apm file executable with `chmod +x apm` 
 
 ## Usage
 
